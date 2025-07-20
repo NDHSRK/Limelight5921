@@ -141,7 +141,7 @@ class ImageUtils:
 # IJThresholdTester or Gimp.
 class SampleParameters:
     # grayscale for the yellow sample, use the green rgb channel
-    GREEN_CHANNEL_THRESHOLD_LOW = 150
+    GREEN_CHANNEL_THRESHOLD_LOW = 40 # 40 = home, 150 = 03/08 Regional
 
     # hsv for blue
     BLUE_HSV_HUE_LOW = 110
@@ -373,6 +373,7 @@ def runPipeline(image, llrobot):
     try:
         recognition = SampleRecognition(alliance)
         ret_val = recognition.perform_recognition(image)
+        print(ret_val.status)
 
         if ret_val.status == SampleRecognition.SampleRecognitionReturn.RecognitionStatus.FAILURE:
             llpython = [SampleRecognition.SampleRecognitionReturn.RecognitionStatus.FAILURE.value,
@@ -391,13 +392,7 @@ def runPipeline(image, llrobot):
 
         # Return the OpenCV contour of the selected sample for the LL crosshair,
         # the modified image, and custom robot data.
-        # If we haven't found a sample target return an empty image with the same
-        # dimensions as the input image.
-        if ret_val.drawn_target is None:
-            ret_target = np.empty_like(image)
-        else:
-            ret_target = ret_val.drawn_target
-        return ret_val.sample_contour, ret_target, llpython
+        return ret_val.sample_contour, ret_val.drawn_target, llpython
     except Exception as e:
         # For debugging print out information from the exception.
         print(repr(e))
