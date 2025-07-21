@@ -2,6 +2,7 @@
 import numpy as np
 import cv2
 from enum import Enum
+from array import array
 import sys
 import traceback
 
@@ -344,7 +345,6 @@ class SampleRecognition:
                                             sample_center_y,
                                             filteredN.largest_filtered_contour, drawn_targets)
 
-
 '''
 llPython return value mapping:
 llPython[0] = status, one of SampleRecognition.SampleRecognitionReturn.RecognitionStatus.<status>.value
@@ -353,7 +353,6 @@ llPython[2] = ftc_angle of selected sample
 llPython[3] = center of selected sample x (pixels)
 llPython[4] = center of selected sample y (pixels)
 '''
-
 
 #################################################################
 # Main program
@@ -370,10 +369,15 @@ def runPipeline(image, llrobot):
             return np.array([[]]), image, [
                 SampleRecognition.SampleRecognitionReturn.RecognitionStatus.IDLE.value,
                 SampleRecognition.SampleColor.NONE.value, 0.0, 0.0, 0.0]
+
     try:
         recognition = SampleRecognition(alliance)
         ret_val = recognition.perform_recognition(image)
         print(ret_val.status)
+
+        ##!! Declaring llpython in this way is *crucial*; otherwise the
+        # Limelight hangs up/crashes on the llpython return value.
+        llpython = array('d', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
         if ret_val.status == SampleRecognition.SampleRecognitionReturn.RecognitionStatus.FAILURE:
             llpython = [SampleRecognition.SampleRecognitionReturn.RecognitionStatus.FAILURE.value,
