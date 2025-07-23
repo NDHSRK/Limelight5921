@@ -2,7 +2,6 @@
 import numpy as np
 import cv2
 from enum import Enum
-from array import array
 import sys
 import traceback
 
@@ -141,7 +140,8 @@ class ImageUtils:
 # Python grayscale threshold/HSV inRange values derived from
 # IJThresholdTester or Gimp.
 class SampleParameters:
-    # grayscale for the yellow sample, use the green rgb channel
+    ##!! As a demonstration, for the yellow sample use the
+    # green rgb channel and grayscale threshold.
     GREEN_CHANNEL_THRESHOLD_LOW = 40 # 40 = home, 150 = 03/08 Regional
 
     # hsv for blue
@@ -223,6 +223,7 @@ class SampleRecognition:
             SUCCESS = 200
             PYTHON_APP_CRASH = 300
             IDLE = 400
+            IMAGE_NOT_AVAILABLE = 450
             FAILURE = 500
 
         def __init__(self, status, color_value, ftc_angle, selected_sample_center_x, selected_sample_center_y,
@@ -314,7 +315,7 @@ class SampleRecognition:
 
         # Get a rotated rectangle from the largest contour.
         ret_status = self.SampleRecognitionReturn.RecognitionStatus.FAILURE
-        color_value = SampleRecognition.SampleColor.YELLOW
+        color_value = SampleRecognition.SampleColor.YELLOW.value
         drawn_targets = np.copy(image)
         ftc_angle = 0.0
         sample_center_x = 0
@@ -368,23 +369,28 @@ def runPipeline(image, llrobot):
         case _:
             return np.array([[]]), image, [
                 SampleRecognition.SampleRecognitionReturn.RecognitionStatus.IDLE.value,
-                SampleRecognition.SampleColor.NONE.value, 0.0, 0.0, 0.0]
+                SampleRecognition.SampleColor.NONE.value]
 
     try:
+        ##!! It can happen that the Limelight runtime calls
+        # runPipeline before an image is actually available,
+        # probably because of the settable exposure time. So
+        # we'll test for an all-black image and return a code
+        # to the caller.
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        non_zero_pixel_count = cv2.countNonZero(gray_image)
+        if non_zero_pixel_count == 0:
+            return np.array([[]]), image, [
+                SampleRecognition.SampleRecognitionReturn.RecognitionStatus.IMAGE_NOT_AVAILABLE.value]
+
         recognition = SampleRecognition(alliance)
         ret_val = recognition.perform_recognition(image)
         print(ret_val.status)
 
-        ##!! Declaring llpython in this way is *crucial*; otherwise the
-        # Limelight hangs up/crashes on the llpython return value.
-        llpython = array('d', [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-
         if ret_val.status == SampleRecognition.SampleRecognitionReturn.RecognitionStatus.FAILURE:
             llpython = [SampleRecognition.SampleRecognitionReturn.RecognitionStatus.FAILURE.value,
-                        SampleRecognition.SampleColor.NONE.value,
-                        0.0,  # ftc_angle
-                        0.0,  # selected_sample_center_x
-                        0.0]  # selected_sample_center_y
+                        # the color we were working on at the time of failure
+                        ret_val.color_value]
         else:
             # record some custom data to send back to the robot
             # For logging/debugging include target sample center x, y; PickupZonePosition(Enum) value
@@ -411,4 +417,4 @@ def runPipeline(image, llrobot):
         # Indicate that our application has crashed.
         return np.array([[]]), image, [
             SampleRecognition.SampleRecognitionReturn.RecognitionStatus.PYTHON_APP_CRASH.value,
-            line_number, 0.0, 0.0, 0.0]
+            line_number]
