@@ -142,7 +142,7 @@ class ImageUtils:
 class SampleParameters:
     ##!! As a demonstration, for the yellow sample use the
     # green rgb channel and grayscale threshold.
-    GREEN_CHANNEL_THRESHOLD_LOW = 40 # 40 = home, 150 = 03/08 Regional
+    GREEN_CHANNEL_THRESHOLD_LOW = 160 # LRS03081735... Regional
 
     # hsv for blue
     BLUE_HSV_HUE_LOW = 110
@@ -305,6 +305,8 @@ class SampleRecognition:
         # the green channel of the original BGR image.
         b, g, r = cv2.split(image) # split the image into its BGR channels
         thresholdedN = ImageUtils.apply_grayscale_threshold(g, SampleParameters.GREEN_CHANNEL_THRESHOLD_LOW)
+        cv2.imshow("ThrN", thresholdedN)
+        cv2.waitKey(0)
 
         # Sanitize the thresholded neutral samples by eliminating contours
         # that are below the minimum allowable area or above the maximum

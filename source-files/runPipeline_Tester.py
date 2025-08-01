@@ -2,6 +2,7 @@ from detect_sample_as_runPipeline import runPipeline
 from detect_sample_as_runPipeline import SampleRecognition
 import argparse
 import cv2
+import os
 
 def main():
     # Construct the argument parser and parse the arguments.
@@ -10,11 +11,12 @@ def main():
     args = vars(ap.parse_args())
 
     ##** CHANGE the next two lines for the file and/or alliance you want to test. **
-    image_filename = "snap704595334983.png"
+    image_filename = "LRS0308173523970710581193948.png"
     alliance = "RED"
 
     # load the image
-    image_full_path = args["image_dir"] + image_filename
+    current_working_directory = os.getcwd()
+    image_full_path = os.getcwd() + args["image_dir"] + image_filename
     src = cv2.imread(image_full_path)
     if src is None:
         print('File not found')
