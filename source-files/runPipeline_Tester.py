@@ -11,7 +11,7 @@ def main():
     args = vars(ap.parse_args())
 
     ##** CHANGE the next two lines for the file and/or alliance you want to test. **
-    image_filename = "LRS0308173523970710581193948.png"
+    image_filename = "cw_yellow_sample.png"
     alliance = "RED"
 
     # load the image

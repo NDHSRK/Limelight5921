@@ -236,23 +236,38 @@ class SampleRecognition:
             self.sample_contour = sample_contour
             self.drawn_target = drawn_target
 
-    # The points of an OpenCV RotatedRect are numbered 0 to 4, where
-    # point 0 is that with the least x (first) and least y (second,
-    # in case two points have the same x) value. The angle of a
-    # RotatedRect is always measured from point 0 and always lies
-    # between [0,90], exclusive of 0 but inclusive of 90,
-    # because if the object is rotated more than 90 degrees, the
-    # next point (either point 1 or point 2, depending on the
-    # direction of the rotation) becomes point 0.
-
+    # The x and y coordinates of the points of an OpenCV RotatedRect
+    # are relative to 0,0 at the viewer's upper left. The points
+    # are numbered 0 to 3 in the clockwise direction, where point 0
+    # is that with the lowest x coordinate. If two points have the
+    # same x coordinate, which will happen if a rectangle is
+    # perfectly horizontal or perfectly vertical, the point with the
+    # lower of the two y coordinates becomes point 0.
+    #
+    # The angle of a RotatedRect is always measured from point 0 and
+    # always lies between [0,90], exclusive of 0 but inclusive of 90.
     # The angle is measured from a line between point 0 and point 1
-    # (clockwise) and a line through point 0 parallel to the left
-    # boundary of the image. The "height" of a RotatedRect is
-    # *always" the distance between point 0 x and point 1 x; the
-    # "width" is always the distance between point 1 y and point 2 y.
-    # In the case of IntoTheDeep samples, our "width" is always the
-    # longer of these two RotatedRect values, i.e. the 3.5" side of
-    # a sample.
+    # and a line through point 0 parallel to the left boundary of
+    # the image. What is not obvious is that the corner of a rectangle
+    # designated as point 0 can change with rotation.
+
+    # For example, for a counter-clockwise rotation of a perfectly
+    # horizontal or vertical rectangle, the angle starts at 90 and
+    # decreases. Point 0 stays the same but then instead of reaching
+    # 0 it changes to 90 and the previous point 1 becomes point 0.
+    # For a clockwise rotation of a perfectly horizontal or vertical
+    # rectangle, the angle starts at 90 but then, as soon as the
+    # rotation starts, it changes to the first value greater than 0
+    # and point 3 becomes point 0. The angle increases until it
+    # reaches 90; point 0 remains the same.
+
+    # To identify the orientation of a rectangle it is necessary to
+    # look at the RotatedRectangle fields size.height and size.width.
+    # The size.height of a RotatedRect is *always" the distance
+    # between point 0 x and point 1 x; the size.width is always the
+    # distance between point 1 y and point 2 y. In the case of
+    # IntoTheDeep samples, our "width" is always the longer of these
+    # two RotatedRect values, i.e. the 3.5" side of a sample.
 
     # The angle of both a perfectly vertical RotatedRectangle
     # and a perfectly horizontal RotatedRectangle is 90.0.
