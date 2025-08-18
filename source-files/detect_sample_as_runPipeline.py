@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from enum import Enum
 import sys
+import platform
 import traceback
 
 ## 7/13/2025 copy/paste from Pycharm AutomaticThresholding project
@@ -108,8 +109,9 @@ class ImageUtils:
             num_filtered = num_filtered + 1
             filtered_contours.append(contours[i])
             cv2.drawContours(filtered_bgr, contours, i, (255, 255, 255), cv2.FILLED)
-            # debug cv2.imshow("Found contour ", filtered_bgr)
-            # debug cv2.waitKey(0)
+            if platform.system() == "Windows":
+                cv2.imshow("Found contour ", filtered_bgr)
+                cv2.waitKey(0)
 
         # Convert the BGR image to grayscale, which in our case should be binary.
         filtered_binary = cv2.cvtColor(filtered_bgr, cv2.COLOR_BGR2GRAY)
@@ -320,8 +322,9 @@ class SampleRecognition:
         # the green channel of the original BGR image.
         b, g, r = cv2.split(image) # split the image into its BGR channels
         thresholdedN = ImageUtils.apply_grayscale_threshold(g, SampleParameters.GREEN_CHANNEL_THRESHOLD_LOW)
-        cv2.imshow("ThrN", thresholdedN)
-        cv2.waitKey(0)
+        if platform.system() == "Windows":
+            cv2.imshow("ThrN", thresholdedN)
+            cv2.waitKey(0)
 
         # Sanitize the thresholded neutral samples by eliminating contours
         # that are below the minimum allowable area or above the maximum
@@ -376,6 +379,8 @@ llPython[4] = center of selected sample y (pixels)
 # Main program
 #################################################################
 def runPipeline(image, llrobot):
+    print(platform.system())
+
     alliance_ordinal = int(llrobot[0])
 
     match alliance_ordinal:
